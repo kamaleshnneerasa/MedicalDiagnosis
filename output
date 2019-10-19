@@ -1,0 +1,32 @@
+void output(Network Alarm){
+	ifstream inputFile("alarm.bif");
+	ofstream outputFile("solved_alarm.bif");
+	
+	string line;
+	string words;
+	int networkSize = Alarm.netSize();
+	list<Graph_Node>::iterator ptr = get_nth_node(0);
+
+	if(inputFile.is_open() && outputFile.is_open()){
+		while(!inputFile.eof()){
+			stringstream ss;
+			getline(inputFile, line);
+			ss.str(line);
+
+			ss >> words;
+
+			if(words.compare("table") == 0){
+				outputFile << "\ttable ";
+
+				for(int i =0; i<ptr->getCPT().size(); i++){
+					outputFile << ptr->getCPT()[i] << " ";
+				}
+
+				outputFile << ";\n";
+			} 
+			else{
+				outputFile << line << "\n"; 
+			}			
+		}
+	}
+}
