@@ -21,7 +21,7 @@ void output(Network Alarm){
 				for(int i =0; i<ptr->getCPT().size(); i++){
 					outputFile << ptr->getCPT()[i] << " ";
 				}
-
+				ptr++;
 				outputFile << ";\n";
 			} 
 			else{
