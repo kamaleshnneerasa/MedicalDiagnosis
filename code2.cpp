@@ -11,7 +11,7 @@ using namespace std;
 
 int main(){
     network Alarm;
-	Alarm=read_network();
+    Alarm=read_network();
     vector<pair<vector<string>,float>> data = getData();
     initialize(Alarm,data);
     numIter = 0;
@@ -23,7 +23,26 @@ int main(){
 }
 //We are calculating the data given the marginal distribultion
 void Estep(Network Alarm,vector<pair<vector<string>,float>> data,int size){
+    for(vector<pair<vector<string>,float>>::iterator ptr = data.begin(); ptr != data.end(); ptr++){
+        if(ptr->second >= 0)
+            continue;
 
+        int varPst = -1; 
+        for(int i =0; i< ptr->first.size(); i++){
+            if(ptr->first[i].compare("?") == 0){
+                varPst = i;
+                break;
+            }
+        }
+
+        list<Graph_Node>::iterator node =  get_nth_node(varPst);
+        int nValues = node->nValues();
+
+        for(int i = 0; i< nValues; i++){
+            int index = getIndex(node->get_name(), node->get_values()[i], ptr->first, Alarm);
+            (ptr+i+1)->second = node->getCPT()[index];
+        }
+    }
 }
 //We are calculting the marginal distributions given the data
 void Mstep(Network Alarm,vector<pair<vector<string>,float>> data,int size){
@@ -87,9 +106,9 @@ void initialize(Network Alarm,vector<pair<vector<string>,float>> data){
     } 
 }
 //It takes variable,Value_of_variable,data_instance and Alarm as input and returns the index in the CPT Table  
-int getIndex(string var,string valVar,vector<vector<string>> instance,Network Alarm){
+int getIndex(string var,string valVar,vector<string> instance,Network Alarm){
     int index = 0;
-	list<Graph_Node>::Iterator listIt1 = Alarm.search_node(var);
+    list<Graph_Node>::Iterator listIt1 = Alarm.search_node(var);
     int nvalues = listIt1->get_nvalues();
     vector<string> values = listIt1->get_values();
     vector<string> parents = listIt1->get_Parents();
@@ -118,21 +137,21 @@ int getIndex(string var,string valVar,vector<vector<string>> instance,Network Al
 
 //Reads the data from the file and returns in a dataStructure
 pair<vector<pair<vector<string>,float>>,int> getData(Network Alarm){
-	ifstream inFile;
+    ifstream inFile;
     inFile.open("records.dat");
-	string val;
-	vector<vector<string>> result;
- 	if(inFile.is_open){
-		numLines = 0;
-		vector<string> instance;
-		while(numLines<11100){
-			int flag = -1;
-			for(int i=0;i,37;i++){
-				inFile>> val;
-				if(val=="?") flag = i; 
-				instance.push_back(val);
-			}
-			if(flag>=0){
+    string val;
+    vector<vector<string>> result;
+    if(inFile.is_open){
+        numLines = 0;
+        vector<string> instance;
+        while(numLines<11100){
+            int flag = -1;
+            for(int i=0;i,37;i++){
+                inFile>> val;
+                if(val=="?") flag = i; 
+                instance.push_back(val);
+            }
+            if(flag>=0){
                 result.push_back({instance,-1});
                 list<Graph_Node>::Iterator listIt = Alarm.get_nth_node(i);
                 vector<string> values = listIt->getValues();
@@ -142,10 +161,9 @@ pair<vector<pair<vector<string>,float>>,int> getData(Network Alarm){
                     result.push_back({temp,0});
                 }
             }
-			if(flag<0) result.push_back({instance,1})
-			numLines = numLines+1;
-		}
-	}
-	return {result,numLines};
+            if(flag<0) result.push_back({instance,1})
+            numLines = numLines+1;
+        }
+    }
+    return {result,numLines};
 } 
-
